@@ -6,12 +6,14 @@ import { sequelize } from './database/database.js';
 
 // local import
 import authRouter from './Router/auth.js';
+import chatRouter from './Router/chat.js';
 
 const app = express();
 
 app.use(express.json());
 
 app.use('/auth', authRouter);
+app.use('/chat', chatRouter);
 
 app.use((error, req, res, next) => {
     console.error(error);

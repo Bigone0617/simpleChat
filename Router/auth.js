@@ -2,19 +2,19 @@
 import express from 'express';
 
 // local import
-import * as authReposiroty from '../Controller/auth.js';
+import * as authController from '../Controller/auth.js';
 
 const router = express.Router();
 
 // 로그인
-router.post('/signIn', authReposiroty.signIn);
+router.post('/signIn', authController.signIn);
 // 회원가입
-router.post('/signUp', authReposiroty.signUp);
+router.post('/signUp', authController.signUp);
 // 모든 회원 정보 가져오기
-router.get('/allUsers', authReposiroty.getAllUser);
+router.get('/allUsers', authController.getAllUser);
 // 회원 정보 수정
-router.put('/updateUser', authReposiroty.updateUser);
+router.put('/updateUser', authController.updateUser);
 // 회원 탈퇴
-router.delete('/deleteUser', authReposiroty.deleteUser);
+router.delete('/deleteUser', authController.deleteUser);
 
 export default router;
