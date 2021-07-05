@@ -36,7 +36,7 @@ export async function signUp(req, res) {
 
 // 회원 정보 수정
 export async function updateUser(req, res){
-    // updateData(req.body) -> id, userName, email, profileUrl
+    // updateData(req.body) -> id, userName, email, url
     const updated = await userRepository.updateUser(req.body);
 
     res.status(200).json(updated);

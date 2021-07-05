@@ -1,12 +1,31 @@
-let users = [
+import SQ from 'sequelize';
+import { sequelize } from '../database/database.js';
+const DataTypes = SQ.DataTypes;
+
+export const User = sequelize.define(
+    'users',
     {
-        id : 'bigone', 
-        pw : '12345',
-        userName : 'taeil',
-        email : 'xodlfsha@naver.com',
-        profileUrl : 'https://mblogthumb-phinf.pstatic.net/MjAyMDA0MjVfMTAx/MDAxNTg3ODE5MDEzNTA5.p3hCGnZHNY3jPLMhrHy1aXH9t20SLMsdfbnQMAbzY-wg.xfA_E3X5uMPOq3zabKoaITYGZXKkgw5TxEtMjPUmCsAg.PNG.thirdsky30/CropArea0002.png?type=w800'
-    }
-]
+      id: {
+        type: DataTypes.STRING(8),
+        allowNull: false,
+        primaryKey: true,
+      },
+      userName: {
+        type: DataTypes.STRING(45),
+        allowNull: false,
+      },
+      pw: {
+        type: DataTypes.STRING(128),
+        allowNull: false,
+      },
+      email: {
+        type: DataTypes.STRING(128),
+        allowNull: false,
+      },
+      url: DataTypes.TEXT,
+    },
+    { timestamps: false }
+  );
 
 //! ========================== CRUD START==========================//
 
@@ -19,32 +38,29 @@ export async function signIn(id){
 
 //새로운 user 만들기
 export async function createUser(userData){
-    const {id, pw, userName, email, profileUrl} = userData;
-
-    const newUser = { id, pw, userName, email, profileUrl };
-
-    users.push(newUser);
-
-    return newUser;
+    return User.create(userData).then((data) => data.dataValues.id);
 }
 
 
 // 회원 정보 수정
 export async function updateUser(updateData) {
-    const user = await findById(updateData.id);
+    console.log(updateData);
+    return User.findByPk(updateData.id)
+               .then((user) => {
+                   user.userName = updateData.userName;
+                   user.email = updateData.email;
+                   user.url = updateData.url;
 
-    if(user){
-        user.userName = updateData.userName;
-        user.email = updateData.email;
-        user.profileUrl = updateData.profileUrl;
-    }
-    return user;
+                   return user.save();
+               });
 }
 
 // 회원 탈퇴
 export async function deleteUser(id){
-    users = users.filter(user => (user.id !== id));
-    
+    return User.findByPk(id)
+               .then((user) => {
+                   user.destroy();
+               })
 }
 
 //! ========================== CRUD END==========================//
@@ -52,18 +68,10 @@ export async function deleteUser(id){
 
 // id로 데이터 찾기
 export async function findById(id){
-    const find = users.find(data => {
-        if(data.id === id){
-            return data;
-        }
-
-        return null;
-    });
-
-    return find;
+    return User.findOne({ where: {id}});
 }
 
 // 모든 유저 정보 가져오기
 export async function getAllUser(){
-    return users;
+    return User.findAll();
 }

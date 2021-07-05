@@ -1,6 +1,8 @@
 // global import
 import express from 'express';
 import 'express-async-errors';
+import { config } from './config.js';
+import { sequelize } from './database/database.js';
 
 // local import
 import authRouter from './Router/auth.js';
@@ -16,6 +18,9 @@ app.use((error, req, res, next) => {
     res.sendStatus(500);
 });
 
-app.listen(8080, function(){
-    console.log('connection!');
+sequelize.sync().then((client) => {
+    app.listen(config.host.port);
 });
+
+
+//initSocket(server);
