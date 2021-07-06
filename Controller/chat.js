@@ -1,14 +1,24 @@
 import * as chatRepository from '../Repository/chat.js';
+import { getSocketIO } from '../connection/socket.js';
 
 // create chat
 export async function createChat(req, res) {
     const newChat = await chatRepository.createChat(req.body);
     res.status(201).json(newChat);
+    getSocketIO().emit('chats', newChat);
 };
 
 // delete chat
 export async function deleteChat(req, res) {
     const {chatID} = req.body;
+    const chat = await chatRepository.getById(chatID);
+
+    if(!chat){
+        return res.status(404).json({message: `Chat not found: ${chatID}`});
+    }
+    if(chat.userID !== req.userId){
+        return res.sendStatus(403);
+    }
     await chatRepository.deleteChat(chatID)
     res.sendStatus(204);
 };

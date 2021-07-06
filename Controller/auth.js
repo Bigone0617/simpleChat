@@ -1,26 +1,31 @@
-import * as userRepository from '../Repository/auth.js'
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import {} from 'express-async-errors';
+import * as userRepository from '../Repository/auth.js';
+import { config } from '../config.js';
 
 // 로그인
 export async function signIn(req, res){
     const {id, pw} = req.body;
-    const user = await userRepository.signIn(id, pw);
+    const user = await userRepository.signIn(id);
 
     // id가 없는 경우
     if(!user) {
         return res.status(401).json({ message: 'Invalid user or password' });
     }
 
-    // id는 맞지만 비밀번호가 틀린경우
-    if(user.pw !== pw){
+    // 비밀번호 복호화
+   const isValidPassword = await bcrypt.compare(pw, user.pw);
+   if(!isValidPassword) {
         return res.status(401).json({ message: 'Invalid user or password' });
-    }
-
-    res.status(200).json({user});
+   }
+   const token = createJwtToken(user.id);
+   res.status(200).json({ token, id });
 };
 
 // 회원가입
 export async function signUp(req, res) {
-    const { id } = req.body;
+    const { id, pw, userName, email, url } = req.body;
 
     const duplicated = await userRepository.findById(id);
 
@@ -28,10 +33,20 @@ export async function signUp(req, res) {
     if(duplicated){
         return res.status(409).json({ message: `${id} already exists` });
     }
+    // 비밀번호 암호화
+    const hashed = await bcrypt.hash(pw, config.bcrypt.saltRounds);
 
-    const newUser = await userRepository.createUser(req.body);
+    const userId = await userRepository.createUser({
+        id,
+        pw : hashed,
+        userName,
+        email,
+        url
+    });
 
-    res.status(201).json(newUser);
+    const token = createJwtToken(userId);
+
+    res.status(201).json({token, id});
 }
 
 // 회원 정보 수정
@@ -63,3 +78,19 @@ export async function getAllUser(req, res) {
     const allUsers = await userRepository.getAllUser();
     res.status(200).json(allUsers);
 }
+
+
+function createJwtToken(id) {
+    return jwt.sign({ id }, config.jwt.secretKey, {
+      expiresIn: config.jwt.expiresInSec,
+    });
+  }
+  
+  export async function me(req, res, next) {
+    const user = await userRepository.findById(req.userId);
+    console.log(user);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json({ token: req.token, userName: user.userName });
+  }

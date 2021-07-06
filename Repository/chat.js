@@ -2,7 +2,6 @@ import SQ from 'sequelize';
 import { sequelize } from '../database/database.js';
 import { User } from './auth.js';
 const DataTypes = SQ.DataTypes;
-const Sequelize = SQ.Sequelize;
 
 export const Chat = sequelize.define(
     'chats',
@@ -35,22 +34,6 @@ export const Chat = sequelize.define(
   );
 
 Chat.belongsTo(User, {foreignKey: 'userID'});
-
-const INCLUDE_USER = {
-    attributes: [
-        'chatID',
-        'text',
-        'chatTime',
-        'userID',
-        'isDelete',
-        [Sequelize.col('user.userName'), 'userName'],
-        [Sequelize.col('user.url'), 'url'],
-    ],
-    include: {
-        model: User,
-        attributes: [],
-    },
-};
 //! ========================== CRUD START==========================//
 
 //새로운 user 만들기
@@ -69,4 +52,20 @@ export async function deleteChat(chatID){
                .then((chat) => chat.destroy());
 }
 
+
 //! ========================== CRUD END==========================//
+// 모든 채팅 가져오기
+export async function getAllChat(){
+  return Chat.findAll()
+             .then();
+}
+
+// 나의 채팅 가져오기
+export async function getMyChat(userID) {
+  return Chat.findAll({ where: {userID}})
+}
+
+// chatId로 찾아오기
+export async function getById(chatID){
+  return Chat.findByPk(chatID);
+}
